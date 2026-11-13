@@ -1504,3 +1504,14 @@ td.in-late{color:#b91c1c;}
 .al-details li.al-by span{background:#fff;border-color:#bfdbfe;font-weight:600;}
 .al-details .al-before{background:#fef2f2;border-color:#fecaca;}
 .al-details .al-after{background:#f0fdf4;border-color:#bbf7d0;font-weight:700;}
+
+/* 📱 Android app login + update banner (13 Nov) */
+.app-login { max-width: 440px; margin: 0 auto; padding-top: 24px; }
+.app-login-logo { font-size: 46px; line-height: 1; margin-bottom: 6px; }
+.app-login-form { display: grid; gap: 14px; }
+.app-login-form label { display: grid; gap: 6px; font-weight: 600; font-size: 14px; }
+.app-login-form input { font-size: 22px; letter-spacing: .12em; padding: 12px 14px; border: 1px solid var(--border, #CBD5E1); border-radius: 12px; }
+.app-login-who { display: flex; align-items: center; gap: 10px; font-size: 15px; }
+.app-login-office { margin-top: 18px; width: 100%; }
+.app-update { position: sticky; top: 0; z-index: 9000; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 14px; background: #FEF3C7; border-bottom: 2px solid #F59E0B; font-size: 14px; }
+.app-update span { flex: 1; min-width: 0; }

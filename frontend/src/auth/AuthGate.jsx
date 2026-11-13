@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { api } from '../api.js';
 import { UserContext, atLeast, signOut } from './user.js';
 import { showSplash } from '../components/Splash.jsx';
+import { isNativeApp } from '../native.js';
 
 // The guard link this phone used last (main.jsx keeps it; the gate QR keeps it 18 h after an IN).
 function myDutyLink() {
@@ -112,6 +113,7 @@ export default function AuthGate({ children, bar = true }) {
           {/* A guard who opened the app without his link (Prem, 6 Nov): this phone knows his duty page. */}
           {myDutyLink() && <a className="btn setup-btn" style={{ display: 'block', textAlign: 'center', fontSize: '1.15rem', padding: '14px', margin: '8px 0 14px' }} href={'#guard/' + myDutyLink()}>📋 My duty page · என் பணி பக்கம்</a>}
           <div id="login-box" className="login-box"></div>
+          {isNativeApp() && <button type="button" className="btn secondary setup-btn" onClick={() => { try { localStorage.removeItem('app_office'); } catch { /* fine */ } window.location.hash = '#applogin'; }}>📱 Guard login (Clock No + PIN)</button>}
         </div>
       </div>
     );

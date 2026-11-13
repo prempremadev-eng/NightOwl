@@ -22,7 +22,7 @@ const ROLE_NAME = { supervisor: 'Supervisor', branch_admin: 'Branch Admin', city
 // State Admin only watch; an Admin only sets up (users, places, agencies) and runs the card simulator.
 // The Super Admin (app owner) may do everything. POSTs that only read or subscribe stay open to all.
 const VIEW_ONLY = new Set(['city_admin', 'state_admin']);
-const SETUP_ROUTES = new Set(['/userAdd', '/userUpdate', '/userActive', '/userMail', '/userDelete', '/branchSave', '/citySave', '/stateSave', '/agencySave', '/addAccessLog']);
+const SETUP_ROUTES = new Set(['/resetAppPin', '/userAdd', '/userUpdate', '/userActive', '/userMail', '/userDelete', '/branchSave', '/citySave', '/stateSave', '/agencySave', '/addAccessLog']);
 const READ_POSTS = new Set(['/supInbox', '/supSubscribe']);
 // Escort sheet reads: only for logins whose branch has the Escort team (Prem, 25 Oct: other agencies of the
 // same branch may look; nobody from another branch).
@@ -39,6 +39,7 @@ const OFFICE_VIEWS = new Set(['/myProfile', '/safety', '/postHistory', '/postWor
 
 // Routes a guard's phone calls with its secret link. Everything else needs a login.
 const GUARD_ROUTES = new Set([
+  '/appStart', '/appSetup', '/appLogin', // 📱 Android app login (applogin.js)
   '/guardInfo', '/saveSubscription', '/testPush',
   '/guardDay', '/guardSaveRoute', '/guardSaveCab', '/guardAddStop', '/guardUpdateStop', '/guardDeleteStop',
   '/guardEscortExtra', '/guardEscortRoute', '/guardEscortCab', '/guardEscortStop',

@@ -33,6 +33,9 @@ import EscortExtra from './components/EscortExtra.jsx';
 import MyAttendance from './components/MyAttendance.jsx';
 import GroupChat from './post/GroupChat.jsx';
 import { api } from './api.js';
+import { isNativeApp } from './native.js';
+import AppLogin from './components/AppLogin.jsx';
+import AppUpdate from './components/AppUpdate.jsx';
 
 // 🔄 New version check (Prem, 10 Nov): Slate sends index.html with a 1-year cache, so phones kept the old app.
 // On open and on coming back to the app, read index.html fresh; a new build → load it under a new address.
@@ -61,7 +64,7 @@ function GuardGroup({ token }) {
 import './style.css';
 
 const GUARD_TOKEN_KEY = 'guard_token';
-const isHomeScreenApp = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+const isHomeScreenApp = () => isNativeApp() || window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
 // Safety net for the Home Screen app: if it ever opens without the secret link,
 // go back to the guard page this phone last used (supervisors use a normal tab, so not affected).
@@ -81,6 +84,8 @@ function rememberGuard(hash) {
     } else if ((!hash || hash === '#') && isHomeScreenApp()) {
       const token = localStorage.getItem(GUARD_TOKEN_KEY);
       if (token) return '#guard/' + token;
+      // 📱 Android app, nobody logged in on this phone: the Clock No + PIN screen (office staff pick "Office login").
+      if (isNativeApp() && localStorage.getItem('app_office') !== '1') return '#applogin';
     }
   } catch {
     // Storage blocked (private mode): the link in the address still works.
@@ -141,6 +146,7 @@ function Root() {
   }, []);
   // Guard's phone: the secret link is the key, no login.
   // Gate QR attendance (Cumbum, 29 Oct): any phone, no login.
+  if (hash === '#applogin') return <AppLogin />;
   if (hash.startsWith('#qr/')) return <QrAttend qrKey={hash.slice('#qr/'.length)} />;
   if (hash.startsWith('#shots/')) return <ShotDrop k={hash.slice('#shots/'.length)} />;
   if (hash.startsWith('#group/')) return <GuardGroup token={hash.slice('#group/'.length)} />;
@@ -201,4 +207,4 @@ function Landing() {
   return <SupFrame active="home"><AdminHome hash="#home" /></SupFrame>;
 }
 
-createRoot(document.getElementById('root')).render(<Root />);
+createRoot(document.getElementById('root')).render(<>{isNativeApp() && <AppUpdate />}<Root /></>);

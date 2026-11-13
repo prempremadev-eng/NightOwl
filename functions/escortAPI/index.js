@@ -1623,7 +1623,7 @@ app.get('/getMaster', async (req, res) => {
     const catalystApp = catalyst.initialize(req, { scope: 'admin' });
     const zcql = catalystApp.zcql();
     const [guards, branches] = await Promise.all([
-      selectAll(zcql, 'Guards', 'SELECT ROWID, id_number, card_number, guard_name, agency, agency_id, branch_id, area, tags, escort_id, phone, photo_key, gender, designation, date_of_joining, date_of_birth, emergency_contact, aadhaar_last4, aadhaar_file_key, relieved_date, relieved_reason, created_by, modified_by, CREATEDTIME, MODIFIEDTIME, is_active FROM Guards ORDER BY id_number ASC').then(g => auth.inArea(req, g)),
+      selectAll(zcql, 'Guards', 'SELECT ROWID, id_number, card_number, guard_name, agency, agency_id, branch_id, area, tags, escort_id, phone, photo_key, gender, designation, date_of_joining, date_of_birth, emergency_contact, aadhaar_last4, aadhaar_file_key, relieved_date, relieved_reason, created_by, modified_by, CREATEDTIME, MODIFIEDTIME, is_active, pin_hash FROM Guards ORDER BY id_number ASC').then(g => auth.inArea(req, g).map(publicGuard)),
       activeBranches(req, zcql)
     ]);
     const [agencies, escortPosts] = await Promise.all([
@@ -1728,8 +1728,8 @@ function cleanTags(v) {
 const CARD_RE = /^[A-Z0-9-]{1,30}$/;
 // What the screens may see of a saved guard row (the unused aadhaar_enc column stays out).
 function publicGuard(g) {
-  const { aadhaar_enc, ...rest } = g || {};
-  return rest;
+  const { aadhaar_enc, pin_hash, ...rest } = g || {};
+  return { ...rest, has_app_pin: !!pin_hash };
 }
 
 // Rules shared by add and edit. `selfId` is the guard being edited (it may keep its own ID / escort).
@@ -2179,6 +2179,7 @@ const admin = require('./admin.js')(app, { catalyst, selectAll, requireRowId, re
 const roster = require('./roster.js')(app, { catalyst, selectAll, requireRowId, fail, auth });
 require('./setupMove.js')(app, { catalyst, selectAll, fail, auth });
 require('./attendance.js')(app, { catalyst, selectAll, requireRowId, fail, auth, getShifts, guardByToken });
+require('./applogin.js')(app, { catalyst, fail, requireRowId, auth, guardById }); // 📱 Android app: Clock No + PIN
 
 // Switched-on branches of my area (from the warm cache, so usually no read).
 async function activeBranches(req, zcql) {

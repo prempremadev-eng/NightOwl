@@ -204,6 +204,11 @@ export const api = {
   guardInfo: token => apiCall('GET', '/guardInfo?t=' + q(token)),
   saveSubscription: (t, subscription, device) => apiCall('POST', '/saveSubscription', { t, subscription, device }),
   testPush: t => apiCall('POST', '/testPush', { t }),
+  // 📱 Android app login (applogin.js): Clock No + PIN; first time Clock No + phone last 4 + new PIN.
+  appStart: clock => apiCall('POST', '/appStart', { clock }),
+  appSetup: (clock, phone4, pin) => apiCall('POST', '/appSetup', { clock, phone4, pin }),
+  appLogin: (clock, pin) => apiCall('POST', '/appLogin', { clock, pin }),
+  resetAppPin: guard_id => apiCall('POST', '/resetAppPin', { guard_id }),
   guardDay: (t, date) => apiCall('GET', '/guardDay?t=' + q(t) + (date ? '&date=' + q(date) : '')),
   guardSaveRoute: body => apiCall('POST', '/guardSaveRoute', body),
   guardSaveCab: body => apiCall('POST', '/guardSaveCab', body),

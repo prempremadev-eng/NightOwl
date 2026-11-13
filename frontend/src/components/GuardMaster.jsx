@@ -435,6 +435,14 @@ export default function GuardMaster() {
             <div className="link-actions">
               <button className="btn" type="submit" disabled={saving}>{saving ? 'Saving...' : 'Save guard'}</button>
               <button className="btn secondary" type="button" onClick={() => setForm(null)}>Cancel</button>
+              {/* 📱 Android app PIN (13 Nov): reset → the guard sets a new PIN with Clock No + phone last 4. */}
+              {form.ROWID && (form.has_app_pin
+                ? <button className="btn secondary" type="button" disabled={saving} onClick={async () => {
+                    setError(''); setNote('');
+                    try { await api.resetAppPin(form.ROWID); putRow({ ROWID: form.ROWID, has_app_pin: false }); setForm(f => ({ ...f, has_app_pin: false })); setNote('📱 App PIN of ' + form.guard_name + ' reset. Next login: Clock No + last 4 digits of the phone, then a new PIN.'); }
+                    catch (err) { setError(err.message); }
+                  }}>📱 Reset app PIN</button>
+                : <span className="master-sub">📱 App PIN not set yet</span>)}
               {form.ROWID && form.is_active === 'true' && !confirmLeft && (
                 <button className="btn secondary master-danger" type="button" onClick={() => setConfirmLeft(true)}>🚫 Guard left</button>
               )}

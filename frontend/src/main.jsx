@@ -126,6 +126,8 @@ async function newVersion() {
     return false; // offline: keep the page as it is
   }
 }
+// 📱 Android app: also check once at start (the WebView keeps the old index.html after a deploy).
+if (isNativeApp()) setTimeout(async () => { if (await newVersion()) window.location.reload(); }, 1500);
 document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState === 'visible' && await newVersion()) window.location.reload();
 });
@@ -137,7 +139,8 @@ function Root() {
   const [hash, setHash] = useState(window.location.hash);
   useEffect(() => {
     const jump = rememberGuard(window.location.hash);
-    if (jump) window.location.hash = jump;
+    // replace, not a new history step: Back must not land on the empty start page (13 Nov).
+    if (jump) window.location.replace(window.location.pathname + window.location.search + jump);
   }, [hash]);
   useEffect(() => {
     const onHash = () => setHash(window.location.hash);

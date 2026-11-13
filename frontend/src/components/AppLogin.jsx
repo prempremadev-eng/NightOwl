@@ -20,7 +20,7 @@ export default function AppLogin() {
   const only = (v, n) => v.replace(/\D/g, '').slice(0, n);
   function done(t) {
     try { localStorage.setItem(TOKEN_KEY, t); localStorage.removeItem('app_office'); } catch { /* private mode */ }
-    window.location.hash = '#guard/' + t;
+    window.location.replace(window.location.pathname + window.location.search + '#guard/' + t);
   }
   async function run(fn) {
     setBusy(true); setError('');

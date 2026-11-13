@@ -350,7 +350,10 @@ export default function SupervisorSchedule() {
   const kindOk = g => !kind || (kind === '*' ? g.incharge : tagsOf(g).includes(kind));
   const onShiftAll = pick ? free.filter(g => (!otherShift[g.ROWID] || pickedExtra) && !escortIds.has(g.ROWID) && (!data.hasRoster || g.roster === pick.shift))
     .sort((x, y) => x.name.localeCompare(y.name)) : [];
-  const onShift = onShiftAll.filter(kindOk);
+  // A Shift Incharge post takes only the guards ticked as shift incharges (Prem, 13 Nov: other guards showed there).
+  const pickedPost = pick && data ? data.posts.find(p => p.ROWID === pick.post) : null;
+  const inchargeSlot = !!(pickedPost && String(pickedPost.name || '').toLowerCase().endsWith('shift incharge'));
+  const onShift = inchargeSlot ? onShiftAll.filter(g => g.incharge) : onShiftAll.filter(kindOk);
   const pickKinds = [...new Set(onShiftAll.flatMap(tagsOf))].sort();
   const b = branches.find(x => String(x.ROWID) === String(branch));
   const sheetDate = date.split('-').reverse().join('-');
@@ -737,14 +740,14 @@ export default function SupervisorSchedule() {
               <div className="pd-label">GUARDS WITH NO POST · SHIFT {pick.shift}</div>
               <input className="pd-search" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search guard" aria-label="Search guard" />
               {/* Only the kind needed here (Prem, 28 Oct): ⭐ incharges, Lady, Document … */}
-              {(pickKinds.length > 0 || onShiftAll.some(g => g.incharge)) && <div className="rs-kinds">
+              {!inchargeSlot && (pickKinds.length > 0 || onShiftAll.some(g => g.incharge)) && <div className="rs-kinds">
                 {[['', 'All'], ...(onShiftAll.some(g => g.incharge) ? [['*', '⭐ Incharge']] : []), ...pickKinds.map(k => [k, k])].map(([k, label]) => (
                   <button key={k || 'all'} className={'rs-kind' + (kind === k ? ' on' : '')} onClick={() => setKind(k)}>{label}</button>
                 ))}
               </div>}
-              <div className="pd-small pd-muted">{onShift.length} guard(s) on Shift {pick.shift} with no post.</div>
+              <div className="pd-small pd-muted">{inchargeSlot ? '⭐ ' + onShift.length + ' shift incharge(s) on Shift ' + pick.shift + ' with no post.' : onShift.length + ' guard(s) on Shift ' + pick.shift + ' with no post.'}</div>
               {onShift.map(g => <Person key={g.ROWID} g={g} />)}
-              {onShift.length === 0 && <div className="pd-muted pd-small">Every Shift {pick.shift} guard has a post.</div>}
+              {onShift.length === 0 && <div className="pd-muted pd-small">{inchargeSlot ? 'No shift incharge is free on Shift ' + pick.shift + ' today (week off, leave or already posted). Other guards are not shown for this post.' : 'Every Shift ' + pick.shift + ' guard has a post.'}</div>}
               <div className="pd-small pd-muted">Pick a guard to put here (or to replace). Publish sends each guard their post when they swipe IN.</div>
             </aside>}
           </div>

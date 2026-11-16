@@ -117,6 +117,7 @@
 .pd-strip-red{background:var(--pd-red-bg);color:#7A2217;}
 
 .pd-sys-red{background:var(--pd-red-bg);color:var(--pd-red);}
+.pd-sys-amber{background:#FEF3C7;color:#92400E;}
 .pd-red{background:var(--pd-red-bg);color:var(--pd-red);}
 .pd-red-text{color:var(--pd-red);}
 .pd-pill-sm{font-size:12px;padding:2px 8px;}

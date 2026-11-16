@@ -146,6 +146,14 @@ module.exports = function postRoutes(app, h) {
         return;
       }
     }
+    // The next guard is IN but has not pressed Take over (16 Nov): say so in amber, not "post empty".
+    let next = null;
+    try { next = await require('./waiting.js').waitingAtPost(zcql, log.post_id, log.duty_date, guard.ROWID); } catch (err) { console.error('waitingAtPost failed:', err.message || err); }
+    if (next) {
+      await addMessage(catalystApp, { post_id: log.post_id, duty_log_id: log.ROWID, guard_id: guard.ROWID, kind: 'system_amber', text: guard.guard_name + ' card OUT · ' + next.name + ' IN ' + next.time + ', not taken over yet · ' + hhmm(nowStamp()) });
+      await sup.notify(catalystApp, log.post_id, 'Not taken over', next.name + ' is IN since ' + next.time + ' but has not pressed Take over · ' + guard.guard_name + ' card OUT ' + hhmm(nowStamp()), false);
+      return;
+    }
     await addMessage(catalystApp, { post_id: log.post_id, duty_log_id: log.ROWID, guard_id: guard.ROWID, kind: 'system_red', text: guard.guard_name + ' card OUT · post empty · ' + hhmm(nowStamp()) });
     await sup.notify(catalystApp, log.post_id, 'Post empty', guard.guard_name + ' card OUT · ' + hhmm(nowStamp()), true);
   }

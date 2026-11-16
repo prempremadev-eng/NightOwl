@@ -95,7 +95,8 @@ export default function PastShift({ token, post, logId, onClose }) {
         <div key={m.ROWID} className="pd-past-msg">
           {m.kind === 'system' && <div className="pd-sys pd-sys-green">{m.text}</div>}
           {m.kind === 'system_red' && <div className="pd-sys pd-sys-red">{m.text}</div>}
-          {m.kind !== 'system' && m.kind !== 'system_red' && (
+              {m.kind === 'system_amber' && <div className="pd-sys pd-sys-amber">⚠️ {m.text}</div>}
+          {m.kind !== 'system' && m.kind !== 'system_red' && m.kind !== 'system_amber' && (
             <div className="pd-card pd-past-card">
               <div className="pd-row-between pd-small"><b>{m.author}</b><span className="pd-muted">{m.time} · {m.kind === 'text' ? 'note' : m.kind}</span></div>
               {m.work && <div><b>{m.work.contractor} · {m.work.persons} persons</b><div className="pd-small pd-muted">{m.work.description}{m.work.finished ? ' · finished ' + m.work.finished : ''}</div></div>}

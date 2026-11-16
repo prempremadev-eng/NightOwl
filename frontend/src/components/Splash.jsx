@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // The welcome when the app opens (Prem, 26 Oct), once per app open:
 //   shift incharge → 📍 branch · agency, guard → "Welcome, <name>", admin → the logo (app name + shield
@@ -100,16 +100,44 @@ export function Owl() {
   );
 }
 
+// Real owl video (Prem, 17 Nov): the owl sits with its back to us, turns its head round and looks
+// straight at us. "NightOwl" comes up the moment it looks; after a short stare the app opens.
+// If the video can't play (old phone, no autoplay, reduced motion) the drawn owl above plays instead.
+const OWL_LOOKS_AT = 2.85;   // second in owl-intro.mp4 when the owl faces us
+const OWL_STARE_MS = 900;    // stay on the stare before the app opens
+const reducedMotion = () => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } };
+
 export default function SplashHost() {
   const [owl, setOwl] = useState(OWL_NOW && !fromGate() ? 'on' : null);
+  const [film, setFilm] = useState(!reducedMotion());
+  const [looking, setLooking] = useState(false);
+  const video = useRef(null);
   useEffect(() => {
     if (!owl) return undefined;
-    const t = setTimeout(() => setOwl(owl === 'on' ? 'leaving' : null), owl === 'on' ? 6000 : 500);
+    // Safety net: never keep the guard waiting more than 7 s, even on a slow network.
+    const t = setTimeout(() => setOwl(owl === 'on' ? 'leaving' : null), owl === 'on' ? 7000 : 500);
     return () => clearTimeout(t);
   }, [owl]);
+  useEffect(() => {
+    const v = video.current;
+    if (owl !== 'on' || !film || !v) return;
+    const p = v.play();
+    if (p && p.catch) p.catch(() => setFilm(false));
+  }, [owl, film]);
+  const onTime = e => { if (e.currentTarget.currentTime >= OWL_LOOKS_AT) setLooking(true); };
+  const onEnded = () => { setLooking(true); setTimeout(() => setOwl(o => (o === 'on' ? 'leaving' : o)), OWL_STARE_MS); };
   const owlLayer = owl && (
-    <div className={'splash splash-owl' + (owl === 'leaving' ? ' splash-out' : '')} onClick={() => setOwl('leaving')} role="status">
-      <Owl />
+    <div className={'splash splash-owl' + (film ? ' splash-film' : '') + (looking ? ' owl-looking' : '') + (owl === 'leaving' ? ' splash-out' : '')} onClick={() => setOwl('leaving')} role="status">
+      {film
+        ? <>
+          <div className="owl-film">
+            <video ref={video} src="owl-intro.mp4" muted playsInline autoPlay preload="auto" aria-hidden="true"
+              onTimeUpdate={onTime} onEnded={onEnded} onError={() => setFilm(false)} />
+          </div>
+          <div className="owl-ghost" aria-hidden="true">Night<em>owl</em></div>
+          <button type="button" className="splash-skip">Skip</button>
+        </>
+        : <Owl />}
       <div className="splash-title">NightOwl</div>
     </div>
   );

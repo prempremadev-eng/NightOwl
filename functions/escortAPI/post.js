@@ -116,7 +116,16 @@ module.exports = function postRoutes(app, h) {
     const day = shiftDate();
     const duty = await dutyOf(zcql, guard.ROWID, weekStartOf(day), day);
     if (!duty || duty.post.post_type !== 'POST') return null;
-    return (await onPostIn(catalystApp, guard, duty, String(last.CREATEDTIME).slice(0, 16))).log;
+    const inAt = String(last.CREATEDTIME).slice(0, 16);
+    // Between 06:00 and 08:00 the card day is still yesterday while the duty day is today (16 Nov: the C guard's
+    // 21:57 IN of the night before made a "today" row at 06:01, and that night his page said "duty over").
+    // Only an IN from today's shift window (an hour before its start, or later) opens today's duty.
+    if (duty.shift && /^\d{2}:\d{2}$/.test(String(duty.shift.start || ''))) {
+      const from = new Date(day + 'T' + duty.shift.start + ':00Z');
+      from.setUTCMinutes(from.getUTCMinutes() - 60);
+      if (inAt < from.toISOString().slice(0, 16).replace('T', ' ')) return null;
+    }
+    return (await onPostIn(catalystApp, guard, duty, inAt)).log;
   }
 
   // OUT / IN again notice to the guard's own phone; an open page refreshes itself on it.

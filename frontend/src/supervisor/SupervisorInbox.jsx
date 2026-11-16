@@ -72,6 +72,7 @@ function Message({ m, onReply, onMenu }) {
   const swipe = useSwipeReply(() => onReply && onReply(m), () => onMenu && onMenu(m));
   if (m.kind === 'system') return <div className="pd-sys pd-sys-green">{Icon.check}{m.text}</div>;
   if (m.kind === 'system_red') return <div className="pd-sys pd-sys-red">{m.text}</div>;
+  if (m.kind === 'system_amber') return <div className="pd-sys pd-sys-amber">⚠️ {m.text}</div>;
   if (m.kind === 'work' && m.work) {
     const w = m.work;
     return (

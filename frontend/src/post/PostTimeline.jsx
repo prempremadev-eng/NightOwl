@@ -532,6 +532,7 @@ export default function PostTimeline({ token, duty, shiftLine, onDutyChange }) {
               {day && <div className="pd-day">{day}</div>}
               {m.kind === 'system' && <div className="pd-sys pd-sys-green">{Icon.check}{m.text}</div>}
               {m.kind === 'system_red' && <div className="pd-sys pd-sys-red">{m.text}</div>}
+              {m.kind === 'system_amber' && <div className="pd-sys pd-sys-amber">⚠️ {m.text}</div>}
               {m.kind === 'work' && <WorkCard m={m} onFinish={finishWork} busy={busy} onReply={x => setReplyTo(x)} />}
               {m.kind === 'alert' && <AlertCard m={m} duty={duty} onCancel={cancelAlert} />}
               {BUBBLE_KINDS.includes(m.kind) && <Bubble m={m} onMenu={x => setSheet(x)} onReply={x => setReplyTo(x)} onPhoto={setView} />}

@@ -65,6 +65,13 @@ module.exports = function supervisorRoutes(app, h) {
       const names = await namesOf(zcql, logs.map(l => l.guard_id).concat(msgs.map(m => m.guard_id)));
       const nameOf = id => (names[String(id)] || {}).guard_name || '';
 
+      // A post whose guard is OUT while the next guard is IN without Take over: "waiting", not "empty" (16 Nov).
+      const waitOf = {};
+      for (const p of posts) {
+        const here = logs.filter(l => String(l.post_id) === String(p.ROWID));
+        const m = here.find(l => l.shift_code !== GENERAL) || here[0];
+        if (m && m.status === 'out') { try { waitOf[String(p.ROWID)] = await require('./waiting.js').waitingAtPost(zcql, p.ROWID, m.duty_date, m.guard_id); } catch (e) { /* keep empty */ } }
+      }
       const list = posts.map(p => {
         const id = String(p.ROWID);
         const here = logs.filter(l => String(l.post_id) === id);
@@ -75,7 +82,7 @@ module.exports = function supervisorRoutes(app, h) {
         if (main) {
           if (main.status === 'on_duty') status = 'on_duty';
           else if (main.status === 'waiting') status = 'waiting';
-          else if (main.status === 'out') status = 'empty';
+          else if (main.status === 'out') status = waitOf[id] ? 'waiting' : 'empty';
           else if (main.status === 'on_break') status = brk && brk.status === 'accepted' ? 'break' : 'empty';
         }
         if (alertCount) status = 'alert';
@@ -84,7 +91,7 @@ module.exports = function supervisorRoutes(app, h) {
         const read = String(seen[id] || '');
         return {
           ROWID: id, name: p.post_name, status, alerts: alertCount,
-          guard: main ? nameOf(main.guard_id) : '', shift: main ? main.shift_code : '',
+          guard: waitOf[id] ? waitOf[id].name + ' · IN ' + waitOf[id].time + ', not taken over' : main ? nameOf(main.guard_id) : '', shift: waitOf[id] ? '' : main ? main.shift_code : '',
           last: last ? { text: last.kind === 'supervisor' ? 'You: ' + last.text : (last.text || { photo: 'Photo', video: 'Video', voice: 'Voice note', work: 'Work update', alert: 'Alert' }[last.kind] || ''), time: String(last.CREATEDTIME).slice(11, 16), stamp: String(last.CREATEDTIME).slice(0, 19) } : null,
           unread: postMsgs.filter(m => m.kind !== 'supervisor' && String(m.CREATEDTIME).slice(0, 19) > read).length
         };
@@ -350,6 +357,12 @@ module.exports = function supervisorRoutes(app, h) {
         && (!regularOnly(p) || shiftsToday(p, rosterOf, regularIds(p, posts, supIds), '').includes(code))));
 
       const attention = [];
+      // Live board: guard OUT but the next guard IN without Take over → "waiting", not empty (16 Nov).
+      const boardWait = {};
+      for (const p of boardPosts) {
+        const l = logs.find(x => String(x.post_id) === String(p.ROWID));
+        if (l && l.status === 'out') { try { boardWait[String(p.ROWID)] = await require('./waiting.js').waitingAtPost(zcql, p.ROWID, l.duty_date, l.guard_id); } catch (e) { /* keep empty */ } }
+      }
       const cards = boardPosts.map(p => {
         const id = String(p.ROWID);
         const log = logs.find(l => String(l.post_id) === id);
@@ -365,6 +378,11 @@ module.exports = function supervisorRoutes(app, h) {
             const wait = Math.floor(minutesBetween(log.in_at, now));
             state = 'waiting'; meta = 'IN ' + hhmm(log.in_at) + (lateTag(log.in_at) ? ' · late' : '') + ' · not taken over · ' + wait + ' min';
             if (wait >= NO_TAKEOVER_MIN) attention.push({ post: p.post_name, postId: id, text: guard + ' IN at ' + hhmm(log.in_at) + ' · no takeover for ' + wait + ' min', level: 'amber' });
+          } else if (log.status === 'out' && boardWait[id]) {
+            const w = boardWait[id];
+            state = 'waiting'; meta = guard + ' card OUT · ' + w.name + ' IN ' + w.time + ' · not taken over';
+            guard = w.name;
+            attention.push({ post: p.post_name, postId: id, text: w.name + ' IN at ' + w.time + ' · not taken over (' + nameOf(log.guard_id) + ' card OUT)', level: 'amber' });
           } else if (log.status === 'out') {
             state = 'empty'; meta = 'Card OUT · post empty';
             attention.push({ post: p.post_name + ' · Empty', postId: id, text: guard + ' card OUT, no one at the post', level: 'red' });

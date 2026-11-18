@@ -103,6 +103,8 @@ export function Owl() {
 // Real owl video (Prem, 17 Nov): the owl sits with its back to us, turns its head round and looks
 // straight at us. "NightOwl" comes up the moment it looks; after a short stare the app opens.
 // If the video can't play (old phone, no autoplay, reduced motion) the drawn owl above plays instead.
+const OWL_GUARD = [['🪪', 'Card IN'], ['📍', 'Take over the post'], ['💬', 'Post chat · voice · photo'], ['☕', 'Break with a cover'], ['🤝', 'Hand over · card OUT']];
+const OWL_OFFICE = [['📅', 'Month roster · schedule'], ['📊', 'Today · live board'], ['🗓️', 'Attendance'], ['🚗', 'Escort duty'], ['📋', 'Site reports · ERT']];
 const OWL_LOOKS_AT = 2.85;   // second in owl-intro.mp4 when the owl faces us
 const OWL_STARE_MS = 900;    // stay on the stare before the app opens
 const reducedMotion = () => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } };
@@ -135,10 +137,21 @@ export default function SplashHost() {
               onTimeUpdate={onTime} onEnded={onEnded} onError={() => setFilm(false)} />
           </div>
           <div className="owl-ghost" aria-hidden="true">Night<em>owl</em></div>
+          {/* Both sides of the owl (Prem, 18 Nov: the sides looked empty): what NightOwl does, left the guard's
+              night in order, right the office. Each line comes in while the owl turns round. */}
+          <ul className="nwcol nwcol-left" aria-hidden="true">
+            <li className="nwcol-head">On duty · பணியில்</li>
+            {OWL_GUARD.map(([i, t], k) => <li key={t} style={{ '--k': k }}><span>{i}</span>{t}</li>)}
+          </ul>
+          <ul className="nwcol nwcol-right" aria-hidden="true">
+            <li className="nwcol-head">Office · அலுவலகம்</li>
+            {OWL_OFFICE.map(([i, t], k) => <li key={t} style={{ '--k': k }}><span>{i}</span>{t}</li>)}
+          </ul>
           <button type="button" className="splash-skip">Skip</button>
         </>
         : <Owl />}
       <div className="splash-title">NightOwl</div>
+      {film && <div className="owl-tag" aria-hidden="true">Card IN · Post · Break · Attendance · Escort</div>}
     </div>
   );
   const [s, setS] = useState(null);

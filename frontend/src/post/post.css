@@ -618,6 +618,23 @@
   -webkit-mask-image:linear-gradient(180deg,#000 0,#000 40%,transparent 90%);mask-image:linear-gradient(180deg,#000 0,#000 40%,transparent 90%);}
 .splash-film .splash-title{position:relative;font-size:34px;letter-spacing:.06em;opacity:0;transform:translateY(14px);animation:none;transition:opacity .6s ease,transform .6s ease;}
 .splash-film.owl-looking .splash-title{opacity:1;transform:none;}
+/* Splash sides (18 Nov): the guard's night on the left, the office on the right; small line under the title on phones. */
+.nwcol{position:absolute;top:50%;transform:translateY(-50%);margin:0;padding:0;list-style:none;display:grid;gap:14px;
+  font-family:Archivo,sans-serif;font-size:clamp(14px,1.25vw,19px);color:#7F8DB8;pointer-events:none;width:min(26vw,330px);}
+.nwcol-left{left:max(24px,calc(50% - 37vh * 9 / 16 - 360px));text-align:right;}
+.nwcol-right{right:max(24px,calc(50% - 37vh * 9 / 16 - 360px));text-align:left;}
+.nwcol li{opacity:0;transform:translateY(10px);animation:nwcol-in .6s ease forwards;animation-delay:calc(.35s + var(--k,0) * .38s);display:flex;align-items:center;gap:10px;}
+.nwcol-left li{justify-content:flex-end;}
+.nwcol li span{font-size:1.2em;filter:grayscale(.2);}
+.nwcol .nwcol-head{animation-delay:.1s;font-size:.72em;letter-spacing:.18em;text-transform:uppercase;color:#4E5B85;}
+.nwcol-left li:not(.nwcol-head)::after,.nwcol-right li:not(.nwcol-head)::before{content:"";width:22px;height:1px;background:#2C3557;flex:none;}
+.owl-looking .nwcol li:not(.nwcol-head){color:#C9D3F2;transition:color .8s ease;}
+@keyframes nwcol-in{to{opacity:1;transform:none;}}
+.owl-tag{position:relative;margin-top:8px;font-size:13px;letter-spacing:.08em;color:#7F8DB8;opacity:0;transition:opacity .6s .2s ease;}
+.owl-looking .owl-tag{opacity:1;}
+@media (max-width:760px){.nwcol{display:none;}}
+@media (min-width:761px){.owl-tag{display:none;}}
+@media (prefers-reduced-motion:reduce){.nwcol li{animation:none;opacity:1;transform:none;}}
 .splash-skip{position:absolute;top:max(16px,env(safe-area-inset-top));right:16px;padding:7px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.22);
   background:rgba(255,255,255,.06);color:rgba(255,255,255,.75);font:inherit;font-size:14px;cursor:pointer;}
 

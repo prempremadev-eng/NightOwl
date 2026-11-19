@@ -103,22 +103,8 @@ export function Owl() {
 // Real owl video (Prem, 17 Nov): the owl sits with its back to us, turns its head round and looks
 // straight at us. "NightOwl" comes up the moment it looks; after a short stare the app opens.
 // If the video can't play (old phone, no autoplay, reduced motion) the drawn owl above plays instead.
-// Head angle over the clip (seconds → degrees away from us), read off owl-intro.mp4 (same as the bird page).
-const OWL_KEYS = [[0, 180], [1.2, 165], [2.0, 100], [2.5, 90], [2.75, 40], [2.91, 0]];
-function owlAngle(t) {
-  if (t <= OWL_KEYS[0][0]) return OWL_KEYS[0][1];
-  for (let i = 1; i < OWL_KEYS.length; i++) {
-    const [t1, a1] = OWL_KEYS[i], [t0, a0] = OWL_KEYS[i - 1];
-    if (t <= t1) { const k = (t - t0) / (t1 - t0); return a0 + (a1 - a0) * (k * k * (3 - 2 * k)); }
-  }
-  return 0;
-}
-function owlArc(a) {
-  if (Math.abs(a) < 0.5) return '';
-  const r = 92, rad = (a - 90) * Math.PI / 180;
-  return `M100 8 A${r} ${r} 0 ${a > 180 ? 1 : 0} 1 ${(100 + r * Math.cos(rad)).toFixed(2)} ${(100 + r * Math.sin(rad)).toFixed(2)}`;
-}
-const hhmm = () => { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+const OWL_GUARD = [['🪪', 'Card IN'], ['📍', 'Take over the post'], ['💬', 'Post chat · voice · photo'], ['☕', 'Break with a cover'], ['🤝', 'Hand over · card OUT']];
+const OWL_OFFICE = [['📅', 'Month roster · schedule'], ['📊', 'Today · live board'], ['🗓️', 'Attendance'], ['🚗', 'Escort duty'], ['📋', 'Site reports · ERT']];
 const OWL_LOOKS_AT = 2.85;   // second in owl-intro.mp4 when the owl faces us
 const OWL_STARE_MS = 2500;   // stay on the stare before the app opens (Prem 19 Nov: was 0.9 s, too quick)
 const reducedMotion = () => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } };
@@ -140,26 +126,6 @@ export default function SplashHost() {
     const p = v.play();
     if (p && p.catch) p.catch(() => setFilm(false));
   }, [owl, film]);
-  // The dial's needle follows the owl's head while the clip plays (bird page style, Prem 19 Nov).
-  const needle = useRef(null);
-  const sweep = useRef(null);
-  const deg = useRef(null);
-  const [angle, setAngle] = useState(180);
-  useEffect(() => {
-    const v = video.current;
-    if (owl !== 'on' || !film || !v) return undefined;
-    let raf;
-    const tick = () => {
-      const a = owlAngle(v.currentTime || 0);
-      if (needle.current) needle.current.setAttribute('transform', `rotate(${a.toFixed(1)} 100 100)`);
-      if (sweep.current) sweep.current.setAttribute('d', owlArc(a));
-      if (deg.current) deg.current.textContent = Math.round(a);
-      setAngle(x => (Math.abs(x - a) > 30 || (a < 8) !== (x < 8) ? a : x));
-      if (!v.ended) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [owl, film]);
   const onTime = e => { if (e.currentTarget.currentTime >= OWL_LOOKS_AT) setLooking(true); };
   const onEnded = () => { setLooking(true); setTimeout(() => setOwl(o => (o === 'on' ? 'leaving' : o)), OWL_STARE_MS); };
   const owlLayer = owl && (
@@ -171,25 +137,15 @@ export default function SplashHost() {
               onTimeUpdate={onTime} onEnded={onEnded} onError={() => setFilm(false)} />
           </div>
           <div className="owl-ghost" aria-hidden="true">Night<em>owl</em></div>
-          {/* Sides like the bird page (Prem, 19 Nov): left a headline about NightOwl that comes in when the
-              owl looks at us, right a dial whose needle follows the owl's head round to the post. */}
+          {/* Prem, 19 Nov: bird page look, but the words from 18 Nov: the guard's night on the left, the office
+              on the right. Each line comes in (blur → clear) while the owl turns; brighter when it looks at us. */}
           <div className="nwcopy" aria-hidden="true">
-            <div className="nw-eyebrow">NightOwl · every shift</div>
-            <h2 className="nw-h1">Every post covered, <em>all night long</em></h2>
-            <p className="nw-lede">Card IN, take over the post, break with a cover, hand over at the end. The office sees it live.</p>
-            <p className="nw-lede nw-ta">ஒவ்வொரு post-உம், ஒவ்வொரு shift-உம்.</p>
+            <div className="nw-eyebrow">On duty · பணியில்</div>
+            <ul className="nw-list">{OWL_GUARD.map(([i, t], k) => <li key={t} style={{ '--k': k }}><span>{i}</span>{t}</li>)}</ul>
           </div>
-          <div className="nwdial-wrap" aria-hidden="true">
-            <div className="nwdial">
-              <svg viewBox="0 0 200 200">
-                <circle cx="100" cy="100" r="92" fill="none" stroke="rgba(227,232,222,.14)" strokeWidth="1" strokeDasharray="1 5.42" />
-                <path ref={sweep} d={owlArc(180)} fill="none" stroke="#E8732A" strokeWidth="2" strokeLinecap="round" />
-                <g ref={needle} transform="rotate(180 100 100)"><line x1="100" y1="58" x2="100" y2="22" stroke="#E3E8DE" strokeWidth="1.5" strokeLinecap="round" /><circle cx="100" cy="20" r="4" fill="#E8732A" /></g>
-                <text x="100" y="2" textAnchor="middle" fill="rgba(227,232,222,.5)" fontSize="8" letterSpacing="1.5">POST</text>
-              </svg>
-              <div className="nwdial-read"><div className="nwdial-time">{hhmm()}</div><div className="nwdial-deg"><span ref={deg}>180</span>°</div></div>
-            </div>
-            <div className="nwdial-cap"><span>Eyes on the post</span><b>{looking || angle < 8 ? 'Watching' : angle > 120 ? 'Turned away' : 'Turning'}</b></div>
+          <div className="nwcopy nwcopy-right" aria-hidden="true">
+            <div className="nw-eyebrow">Office · அலுவலகம்</div>
+            <ul className="nw-list">{OWL_OFFICE.map(([i, t], k) => <li key={t} style={{ '--k': k }}><span>{i}</span>{t}</li>)}</ul>
           </div>
           <button type="button" className="splash-skip">Skip</button>
         </>

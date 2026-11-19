@@ -106,7 +106,7 @@ export function Owl() {
 const OWL_GUARD = [['🪪', 'Card IN'], ['📍', 'Take over the post'], ['💬', 'Post chat · voice · photo'], ['☕', 'Break with a cover'], ['🤝', 'Hand over · card OUT']];
 const OWL_OFFICE = [['📅', 'Month roster · schedule'], ['📊', 'Today · live board'], ['🗓️', 'Attendance'], ['🚗', 'Escort duty'], ['📋', 'Site reports · ERT']];
 const OWL_LOOKS_AT = 2.85;   // second in owl-intro.mp4 when the owl faces us
-const OWL_STARE_MS = 900;    // stay on the stare before the app opens
+const OWL_STARE_MS = 2500;   // stay on the stare before the app opens (Prem 19 Nov: was 0.9 s, too quick)
 const reducedMotion = () => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; } };
 
 export default function SplashHost() {
@@ -117,7 +117,7 @@ export default function SplashHost() {
   useEffect(() => {
     if (!owl) return undefined;
     // Safety net: never keep the guard waiting more than 7 s, even on a slow network.
-    const t = setTimeout(() => setOwl(owl === 'on' ? 'leaving' : null), owl === 'on' ? 7000 : 500);
+    const t = setTimeout(() => setOwl(owl === 'on' ? 'leaving' : null), owl === 'on' ? 9000 : 500);
     return () => clearTimeout(t);
   }, [owl]);
   useEffect(() => {

@@ -1515,3 +1515,10 @@ td.in-late{color:#b91c1c;}
 .app-login-office { margin-top: 18px; width: 100%; }
 .app-update { position: sticky; top: 0; z-index: 9000; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 14px; background: #FEF3C7; border-bottom: 2px solid #F59E0B; font-size: 14px; }
 .app-update span { flex: 1; min-width: 0; }
+/* 🔋 v3 battery help card on the guard page (Android app) */
+.battery-help { display: flex; align-items: flex-start; gap: 10px; margin: 10px 12px 0; padding: 12px 14px; background: #EFF6FF; border: 1px solid #93C5FD; border-radius: 12px; font-size: 14px; }
+.battery-help-text { flex: 1; min-width: 0; display: grid; gap: 4px; }
+.battery-help-text span { color: #1E3A8A; }
+.battery-help-text small { color: #475569; }
+.battery-help-btns { display: flex; align-items: center; gap: 6px; }
+.battery-help .link-btn { background: none; border: 0; padding: 0; color: #1D4ED8; text-decoration: underline; font: inherit; cursor: pointer; }

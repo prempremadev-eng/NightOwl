@@ -35,6 +35,7 @@ import GroupChat from './post/GroupChat.jsx';
 import { api } from './api.js';
 import { isNativeApp } from './native.js';
 import { startAppPush } from './pushNative.js';
+import BatteryHelpCard from './components/BatteryHelp.jsx';
 import AppLogin from './components/AppLogin.jsx';
 import AppUpdate from './components/AppUpdate.jsx';
 
@@ -217,4 +218,4 @@ function Landing() {
   return <SupFrame active="home"><AdminHome hash="#home" /></SupFrame>;
 }
 
-createRoot(document.getElementById('root')).render(<>{isNativeApp() && <AppUpdate />}<Root /></>);
+createRoot(document.getElementById('root')).render(<>{isNativeApp() && <AppUpdate />}{isNativeApp() && <BatteryHelpCard />}<Root /></>);

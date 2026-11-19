@@ -9,6 +9,7 @@ import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        registerPlugin(BatteryHelpPlugin.class);
         super.onCreate(savedInstanceState);
         WebView web = getBridge() != null ? getBridge().getWebView() : null;
 

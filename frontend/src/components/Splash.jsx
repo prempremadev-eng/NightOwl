@@ -116,7 +116,7 @@ export default function SplashHost() {
   const video = useRef(null);
   useEffect(() => {
     if (!owl) return undefined;
-    // Safety net: never keep the guard waiting more than 7 s, even on a slow network.
+    // Safety net: never keep the guard waiting more than 9 s, even on a slow network.
     const t = setTimeout(() => setOwl(owl === 'on' ? 'leaving' : null), owl === 'on' ? 9000 : 500);
     return () => clearTimeout(t);
   }, [owl]);

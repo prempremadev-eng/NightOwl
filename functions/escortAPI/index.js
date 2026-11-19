@@ -695,10 +695,12 @@ app.post('/addAccessLog', async (req, res) => {
         console.error('Card OUT update failed:', err);
       }
       // Escort guard: tell the phone, so an open escort page refreshes and locks.
-      if (guard.escort_id) {
+      // Post guard (v3.1, Prem 19 Nov): the same, so the app shows OUT at once with a notification.
+      {
         try {
           push = await sendPushToGuard(catalystApp, guard.ROWID, {
-            title: '🚪 OUT ' + time, body: 'Your escort page is closed. Swipe IN to open it again.',
+            title: '🚪 Card OUT ' + time,
+            body: guard.escort_id ? 'Your escort page is closed. Swipe IN to open it again.' : 'Duty over. Card IN to open your page again. · பணி முடிந்தது.',
             url: guard.guard_token ? 'index.html#guard/' + guard.guard_token : 'index.html'
           });
         } catch (err) {

@@ -5,7 +5,24 @@
   "server": {
     "url": "https://nightowl-pebhkgse.onslate.in/index.html",
     "androidScheme": "https",
-    "allowNavigation": ["*.onslate.in", "*.catalystserverless.in", "static.zohocdn.com", "*.zoho.in", "accounts.zoho.in"]
+    "allowNavigation": [
+      "*.onslate.in",
+      "*.catalystserverless.in",
+      "static.zohocdn.com",
+      "*.zoho.in",
+      "accounts.zoho.in"
+    ]
   },
-  "android": { "allowMixedContent": false }
+  "android": {
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "PushNotifications": {
+      "presentationOptions": [
+        "badge",
+        "sound",
+        "alert"
+      ]
+    }
+  }
 }

@@ -16,6 +16,11 @@ export async function startAppPush(t) {
       try { await api.saveAppPush(t, tok.value); } catch (err) { console.error('App push not saved:', err.message); }
     });
     await PushNotifications.addListener('registrationError', e => console.error('App push register failed:', e && e.error));
+    // v3.1: a notification while the app is open (it is also shown on top, see capacitor.config.json):
+    // the open guard page reloads its data at once, like the browser's service worker does.
+    await PushNotifications.addListener('pushNotificationReceived', n => {
+      window.dispatchEvent(new CustomEvent('guard-push', { detail: { type: 'push', title: n && n.title, url: n && n.data && n.data.url } }));
+    });
     await PushNotifications.addListener('pushNotificationActionPerformed', a => {
       const url = a && a.notification && a.notification.data && a.notification.data.url;
       const hash = url && url.includes('#') ? url.slice(url.indexOf('#')) : '';

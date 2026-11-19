@@ -20,6 +20,10 @@ export async function startAppPush(t) {
     // the open guard page reloads its data at once, like the browser's service worker does.
     await PushNotifications.addListener('pushNotificationReceived', n => {
       window.dispatchEvent(new CustomEvent('guard-push', { detail: { type: 'push', title: n && n.title, url: n && n.data && n.data.url } }));
+      // Prem, 19 Nov: the open page did not always change at once on card OUT. On the guard's own page
+      // a card IN / OUT reloads the whole page a moment later, so it always shows the new state.
+      const title = String((n && n.title) || '');
+      if (window.location.hash.startsWith('#guard/') && /\b(IN|OUT)\b/.test(title)) setTimeout(() => window.location.reload(), 1200);
     });
     await PushNotifications.addListener('pushNotificationActionPerformed', a => {
       const url = a && a.notification && a.notification.data && a.notification.data.url;

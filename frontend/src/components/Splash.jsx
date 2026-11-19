@@ -147,11 +147,22 @@ export default function SplashHost() {
             <div className="nw-eyebrow">Office · அலுவலகம்</div>
             <ul className="nw-list">{OWL_OFFICE.map(([i, t], k) => <li key={t} style={{ '--k': k }}><span>{i}</span>{t}</li>)}</ul>
           </div>
+          {/* Phones (Prem, 19 Nov: the phone still looked the same): no room on the sides, so the same words come
+              one at a time under the owl, bird page style: the guard's lines while it turns, the office's while it looks. */}
+          <div className="nwtick" aria-hidden="true">
+            <div className="nwtick-set nwtick-guard">
+              <div className="nw-eyebrow">On duty · பணியில்</div>
+              {OWL_GUARD.map(([i, t], k) => <div key={t} className="nwtick-line" style={{ '--k': k }}><span>{i}</span>{t}</div>)}
+            </div>
+            <div className="nwtick-set nwtick-office">
+              <div className="nw-eyebrow">Office · அலுவலகம்</div>
+              {OWL_OFFICE.map(([i, t], k) => <div key={t} className="nwtick-line" style={{ '--k': k }}><span>{i}</span>{t}</div>)}
+            </div>
+          </div>
           <button type="button" className="splash-skip">Skip</button>
         </>
         : <Owl />}
       <div className="splash-title">NightOwl</div>
-      {film && <div className="owl-tag" aria-hidden="true">Card IN · Post · Break · Attendance · Escort</div>}
     </div>
   );
   const [s, setS] = useState(null);

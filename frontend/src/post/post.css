@@ -632,10 +632,24 @@
 .owl-looking .nw-list li{color:#E3E8DE;}
 .owl-looking .nw-list li:first-child{color:#F3A15E;}
 @keyframes nw-in{to{opacity:1;transform:none;filter:none;}}
-.owl-tag{position:relative;margin-top:8px;font-size:13px;letter-spacing:.08em;color:#7F8DB8;opacity:0;transition:opacity .6s .2s ease;}
-.owl-looking .owl-tag{opacity:1;}
 @media (max-width:900px){.nwcopy{display:none;}}
-@media (min-width:901px){.owl-tag{display:none;}}
+.nwtick{position:absolute;left:16px;right:16px;bottom:calc(max(56px,env(safe-area-inset-bottom)) + 64px);height:72px;color:#E3E8DE;pointer-events:none;}
+.nwtick-set{position:absolute;inset:0;transition:opacity .35s ease;}
+.nwtick .nw-eyebrow{justify-content:center;margin:0;animation:none;opacity:1;}
+.nwtick-line{position:absolute;left:0;right:0;top:24px;display:flex;justify-content:center;align-items:center;gap:10px;
+  font-family:'Instrument Serif',Georgia,'Times New Roman',serif;font-size:27px;line-height:1.15;opacity:0;}
+.nwtick-line span{font-size:.75em;}
+.nwtick-guard .nwtick-line{animation:nwt .5s linear both;animation-delay:calc(.3s + var(--k,0) * .5s);}
+.nwtick-guard .nwtick-line:last-child{animation-name:nwt-stay;}
+.nwtick-office{opacity:0;}
+.owl-looking .nwtick-guard{opacity:0;}
+.owl-looking .nwtick-office{opacity:1;}
+.owl-looking .nwtick-office .nwtick-line{animation:nwt .46s linear both;animation-delay:calc(.15s + var(--k,0) * .46s);}
+.owl-looking .nwtick-office .nwtick-line:last-child{animation-name:nwt-stay;color:#F3A15E;}
+@keyframes nwt{0%{opacity:0;filter:blur(6px);transform:translateY(10px)}22%,78%{opacity:1;filter:none;transform:none}100%{opacity:0;filter:blur(6px);transform:translateY(-10px)}}
+@keyframes nwt-stay{0%{opacity:0;filter:blur(6px);transform:translateY(10px)}40%,100%{opacity:1;filter:none;transform:none}}
+@media (min-width:901px){.nwtick{display:none;}}
+@media (prefers-reduced-motion:reduce){.nwtick{display:none;}}
 @media (prefers-reduced-motion:reduce){.nw-eyebrow,.nw-list li{animation:none;opacity:1;transform:none;filter:none;}}
 .splash-skip{position:absolute;top:max(16px,env(safe-area-inset-top));right:16px;padding:7px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.22);
   background:rgba(255,255,255,.06);color:rgba(255,255,255,.75);font:inherit;font-size:14px;cursor:pointer;}

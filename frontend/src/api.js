@@ -224,6 +224,7 @@ export const api = {
   appStart: clock => apiCall('POST', '/appStart', { clock }),
   appSetup: (clock, phone4, pin) => apiCall('POST', '/appSetup', { clock, phone4, pin }),
   appLogin: (clock, pin) => apiCall('POST', '/appLogin', { clock, pin }),
+  saveAppPush: (t, token) => apiCall('POST', '/saveAppPush', { t, token }),
   resetAppPin: guard_id => apiCall('POST', '/resetAppPin', { guard_id }),
   guardDay: (t, date) => apiCall('GET', '/guardDay?t=' + q(t) + (date ? '&date=' + q(date) : '')),
   guardSaveRoute: body => apiCall('POST', '/guardSaveRoute', body),

@@ -40,7 +40,7 @@ const OFFICE_VIEWS = new Set(['/myProfile', '/safety', '/postHistory', '/postWor
 // Routes a guard's phone calls with its secret link. Everything else needs a login.
 const GUARD_ROUTES = new Set([
   '/appStart', '/appSetup', '/appLogin', // 📱 Android app login (applogin.js)
-  '/guardInfo', '/saveSubscription', '/testPush',
+  '/guardInfo', '/saveSubscription', '/saveAppPush', '/testPush',
   '/guardDay', '/guardSaveRoute', '/guardSaveCab', '/guardAddStop', '/guardUpdateStop', '/guardDeleteStop',
   '/guardEscortExtra', '/guardEscortRoute', '/guardEscortCab', '/guardEscortStop',
   '/postDuty', '/takeOver', '/startGeneral', '/endGeneral', '/postTimeline', '/postMessage', '/uploadMedia',

@@ -4,6 +4,7 @@ const express = require('express');
 const catalyst = require('zcatalyst-sdk-node');
 const crypto = require('crypto');
 const webpush = require('web-push');
+const { sendFcm } = require('./fcm.js');
 const { ROTATION, computeDisplayRows, dayOf } = require('./seats.js');
 const { escortDay } = require('./escortRoster.js');
 
@@ -1212,7 +1213,15 @@ async function sendPushToRows(catalystApp, tableName, subs, payload) {
   for (const s of subs) {
     const device = s.device || 'other';
     try {
-      await webpush.sendNotification(JSON.parse(s.subscription_json), JSON.stringify(payload), {
+      const sub = JSON.parse(s.subscription_json);
+      // 📱 Android app (v2): an FCM address instead of a browser push address.
+      if (sub && sub.fcm) {
+        const r = await sendFcm(catalystApp, process.env.MEDIA_BUCKET || 'escortcardaccess-media', sub.fcm, payload);
+        if (r === 'gone') { await table.deleteRow(s.ROWID); devices.push({ device, result: 'removed' }); }
+        else devices.push({ device, result: 'sent' });
+        continue;
+      }
+      await webpush.sendNotification(sub, JSON.stringify(payload), {
         vapidDetails: { subject: VAPID_SUBJECT, publicKey: keys.publicKey, privateKey: keys.privateKey },
         TTL: 60 * 60
       });
@@ -2148,6 +2157,25 @@ app.post('/saveSubscription', async (req, res) => {
         guard_id: guard.ROWID, subscription_json: JSON.stringify(sub), device
       });
     }
+    res.status(200).json({ status: 'success', data: { saved: !same } });
+  } catch (err) {
+    fail(res, err);
+  }
+});
+
+// 📱 Android app (v2, 19 Nov): saves the app's FCM address in the same PushSubscriptions table
+// (subscription_json = {"fcm": "..."}, device = 'app'), so every place that already notifies a guard
+// reaches the app too. The same address is not saved twice.
+app.post('/saveAppPush', async (req, res) => {
+  try {
+    const catalystApp = catalyst.initialize(req, { scope: 'admin' });
+    const zcql = catalystApp.zcql();
+    const guard = await guardByToken(zcql, req.body.t);
+    const token = String(req.body.token || '');
+    if (token.length < 20 || token.length > 4000 || /\s/.test(token)) throw new Error('Invalid app push address');
+    const existing = await selectAll(zcql, 'PushSubscriptions', `SELECT ROWID, subscription_json FROM PushSubscriptions WHERE guard_id = ${guard.ROWID} ORDER BY ROWID ASC`);
+    const same = existing.find(s => { try { return JSON.parse(s.subscription_json).fcm === token; } catch { return false; } });
+    if (!same) await catalystApp.datastore().table('PushSubscriptions').insertRow({ guard_id: guard.ROWID, subscription_json: JSON.stringify({ fcm: token }), device: 'app' });
     res.status(200).json({ status: 'success', data: { saved: !same } });
   } catch (err) {
     fail(res, err);

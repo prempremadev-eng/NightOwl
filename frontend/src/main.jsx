@@ -34,6 +34,7 @@ import MyAttendance from './components/MyAttendance.jsx';
 import GroupChat from './post/GroupChat.jsx';
 import { api } from './api.js';
 import { isNativeApp } from './native.js';
+import { startAppPush } from './pushNative.js';
 import AppLogin from './components/AppLogin.jsx';
 import AppUpdate from './components/AppUpdate.jsx';
 
@@ -128,6 +129,12 @@ async function newVersion() {
 }
 // 📱 Android app: also check once at start (the WebView keeps the old index.html after a deploy).
 if (isNativeApp()) setTimeout(async () => { if (await newVersion()) window.location.reload(); }, 1500);
+// 🔔 App notifications (v2): once a guard is logged in on this phone, register it with FCM.
+if (isNativeApp()) {
+  const appPush = () => { try { const t = localStorage.getItem('guard_token'); if (t && localStorage.getItem('app_office') !== '1') startAppPush(t); } catch { /* fine */ } };
+  setTimeout(appPush, 2500);
+  window.addEventListener('hashchange', appPush);
+}
 document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState === 'visible' && await newVersion()) window.location.reload();
 });

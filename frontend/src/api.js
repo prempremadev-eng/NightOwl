@@ -8,7 +8,9 @@ const CROSS = /^https?:/.test(API_BASE);
 async function authHeaders() {
   if (!CROSS || !window.catalyst || !window.catalyst.auth) return {};
   try {
-    const t = await window.catalyst.auth.generateAuthToken();
+    // Android app (19 Nov): in the app's WebView this could hang for ever with no office login, and the
+    // Clock No screen stayed on "…". Give it 4 s; no token = a guard's call, which needs none.
+    const t = await Promise.race([window.catalyst.auth.generateAuthToken(), new Promise(r => setTimeout(() => r(null), 4000))]);
     const token = typeof t === 'string' ? t : t && t.access_token;
     return token ? { Authorization: token } : {}; // the raw token, no prefix (Catalyst Web SDK, Slate → function)
   } catch {
@@ -16,10 +18,24 @@ async function authHeaders() {
   }
 }
 
+// App login calls (Clock No / PIN) are public: no office token asked for.
+const NO_AUTH = new Set(['/appStart', '/appSetup', '/appLogin']);
 async function apiCall(method, endpoint, body) {
-  const options = { method, headers: { 'Content-Type': 'application/json', ...(await authHeaders()) } };
+  const options = { method, headers: { 'Content-Type': 'application/json', ...(NO_AUTH.has(endpoint) ? {} : await authHeaders()) } };
   if (body) options.body = JSON.stringify(body);
-  const res = await fetch(API_BASE + endpoint, options);
+  // App login only (other calls, like imports, can take longer): a hung network shows a message after 25 s, not "…" for ever.
+  const stop = NO_AUTH.has(endpoint) && typeof AbortController === 'function' ? new AbortController() : null;
+  const timer = stop && setTimeout(() => stop.abort(), 25000);
+  if (stop) options.signal = stop.signal;
+  let res;
+  try {
+    res = await fetch(API_BASE + endpoint, options);
+  } catch (err) {
+    if (err && err.name === 'AbortError') throw new Error('Network slow, try again. · இணையம் மெதுவாக உள்ளது, மீண்டும் முயலுங்கள்.');
+    throw err;
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
   let json;
   try {
     json = await res.json();

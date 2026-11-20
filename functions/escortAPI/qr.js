@@ -481,6 +481,22 @@ module.exports = function qrRoutes(app, h) {
       // 🆕 New Registration (Prem, 29 Oct): the first time, the live photo becomes the face. Regular guard: ID +
       // name + last 4 of his phone, and no face yet. Reliever: the name + phone the guard on duty added.
       if (purpose === 'REG') {
+        // Eyes open in the registered face (Prem, 20 Nov: a guard closed his eyes early and the shut-eye photo
+        // became his face). The phone sends one more photo after "open your eyes"; the more open one is kept.
+        let regPhoto = photo;
+        const m5 = String(req.body.photo5 || '').match(/^data:image\/jpeg;base64,(.+)$/);
+        if (m5) {
+          const buf5 = Buffer.from(m5[1], 'base64');
+          const f5 = buf5.length <= 1048576 ? tmpFile(buf5, 'jpg') : null;
+          const after = f5 ? await measureFace(catalystApp, f5, Number(req.body.w) || 0) : null;
+          let use5 = false;
+          if (after && !after.why && after.eyes && after.eyes > (first.eyes || 0)) {
+            const s5 = await catalystApp.zia().compareFace(fs.createReadStream(selfieFile), fs.createReadStream(f5));
+            use5 = yes(s5 && s5.matched);
+          }
+          console.log('qr reg photo', JSON.stringify({ first: first.eyes, after: after ? after.eyes : null, use5 }));
+          if (use5) regPhoto = buf5;
+        }
         // One face, one person (Prem, 9 Nov: his face got registered for two guards). The new face is checked
         // against every registered face here (guards and relievers); a match stops the registration.
         let dup = null;
@@ -504,7 +520,7 @@ module.exports = function qrRoutes(app, h) {
           const late = inCheck(shifts, row.shift_code, row.duty_date);
           if (late) throw new Error(late.swapTo ? '⏰ உங்கள் reliever பணி Shift ' + row.shift_code + '. அந்த நேரத்தில் வாருங்கள்.' : late.why);
           const key = keyFor('rel-' + p.ROWID);
-          await catalystApp.stratus().bucket(BUCKET).putObject(key, photo, { contentType: 'image/jpeg' });
+          await catalystApp.stratus().bucket(BUCKET).putObject(key, regPhoto, { contentType: 'image/jpeg' });
           const ticket = await makeTicket(catalystApp, { rs: String(row.ROWID), rel: String(p.ROWID), b: String(b.ROWID), a: 'RIN', s: key, d: distance, reg: true });
           return ok(res, { matched: true, reliever: true, registering: true, ticket, action: 'IN', distance, guard: { name: p.name + ' 🔁 reliever', id: masked(p.phone) }, shift: shiftOf(row.shift_code), addedBy: row.added_by || '' });
         }
@@ -513,7 +529,7 @@ module.exports = function qrRoutes(app, h) {
         const late = inCheck(shifts, code, day);
         if (late) throw new Error(late.why + (late.swapTo ? ' உங்கள் shift நேரத்தில் பதிவு செய்யவும்.' : ''));
         const key = keyFor(g.ROWID);
-        await catalystApp.stratus().bucket(BUCKET).putObject(key, photo, { contentType: 'image/jpeg' });
+        await catalystApp.stratus().bucket(BUCKET).putObject(key, regPhoto, { contentType: 'image/jpeg' });
         const ticket = await makeTicket(catalystApp, { g: String(g.ROWID), b: String(b.ROWID), a: 'IN', s: key, la: lat, ln: lng, d: distance, m: null, dd: '', reg: true });
         return ok(res, { matched: true, registering: true, ticket, action: 'IN', distance, guard: { name: g.guard_name, id: g.id_number }, shift: shiftOf(code) });
       }

@@ -204,10 +204,13 @@ export default function QrAttend({ qrKey }) {
       setHint('✅ Open your eyes · கண்ணைத் திறங்கள்');
       say('open', 'கண்ணைத் திறங்கள்', 'Open your eyes');
       setCount('👀');
-      await new Promise(r => setTimeout(r, 500));
+      // One more photo with the eyes open again (Prem, 20 Nov: a guard who closed early got a shut-eye face as
+      // the registered photo). The server keeps the more open one of the first and this one for a new registration.
+      await new Promise(r => setTimeout(r, p === 'REG' ? 1100 : 500));
+      const back = p === 'REG' ? snap() : null;
       stopCam();
       setStep('checking');
-      last.current = { k: qrKey, lat: fix.current.coords.latitude, lng: fix.current.coords.longitude, acc: fix.current.coords.accuracy, photo: c.toDataURL('image/jpeg', 0.85), photo2: shut[0].toDataURL('image/jpeg', 0.75), photo3: shut[1].toDataURL('image/jpeg', 0.75), photo4: shut[2].toDataURL('image/jpeg', 0.75), c: ch.c, w: c.width, light };
+      last.current = { k: qrKey, lat: fix.current.coords.latitude, lng: fix.current.coords.longitude, acc: fix.current.coords.accuracy, photo: c.toDataURL('image/jpeg', 0.85), photo2: shut[0].toDataURL('image/jpeg', 0.75), photo3: shut[1].toDataURL('image/jpeg', 0.75), photo4: shut[2].toDataURL('image/jpeg', 0.75), ...(back ? { photo5: back.toDataURL('image/jpeg', 0.85) } : {}), c: ch.c, w: c.width, light };
       const r = (await api.qrCheck({ ...last.current, purpose: p, ...(reg || {}) })).data;
       // Same face already registered for someone (Prem, 9 Nov): say who, in Tamil first, and speak it with the name.
       if (r.dup) {

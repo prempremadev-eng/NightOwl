@@ -133,7 +133,11 @@ export default function SplashHost() {
       {film
         ? <>
           <div className="owl-film">
+            {/* Clear poster (Prem, 23 Nov): with no poster the Android app (WebView) shows a grey ▶ button before the
+                first frame and after the end, so it looked like a YouTube video. */}
             <video ref={video} src="owl-intro.mp4" muted playsInline autoPlay preload="auto" aria-hidden="true"
+              poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+              disablePictureInPicture controls={false}
               onTimeUpdate={onTime} onEnded={onEnded} onError={() => setFilm(false)} />
           </div>
           <div className="owl-ghost" aria-hidden="true">Night<em>owl</em></div>

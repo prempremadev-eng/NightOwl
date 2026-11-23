@@ -134,6 +134,7 @@ export default function QrAttend({ qrKey }) {
   const stream = useRef(null);
   const fix = useRef(null);
   const resetTimer = useRef(null);
+  const [held, setHeld] = useState(false); // touched the ✅ IN screen: stay here (Prem, 23 Nov)
   // The steps show the first time on this phone, later behind ❓ Help.
   const [firstTime, setFirstTime] = useState(() => { try { return !localStorage.getItem('qr-help-seen'); } catch { return true; } });
   const [help, setHelp] = useState(false);
@@ -302,11 +303,13 @@ export default function QrAttend({ qrKey }) {
       if (c.action === 'OUT') { savePass(''); saveDuty(''); }
       else if (d.token) saveDuty(d.token);
       setDone(d);
+      setHeld(false);
       setStep('done');
       // After an IN the duty page opens by itself, in place of this page (Prem, 2 Nov: a reliever must not get
       // back to IN / OUT; only a new scan opens it).
+      // 3 s (Prem, 23 Nov): time to touch the screen and stay here; the button still opens it at once.
       resetTimer.current = d.token
-        ? setTimeout(() => goDuty(d.token), 1500)
+        ? setTimeout(() => goDuty(d.token), 3000)
         : setTimeout(() => { setStep('start'); setDone(null); setCheck(null); }, 30000);
     } catch (err) {
       setMsg(err.message);
@@ -452,9 +455,10 @@ export default function QrAttend({ qrKey }) {
       )}
 
       {step === 'done' && done && (
-        <div className="qr-card qr-ok">
+        <div className="qr-card qr-ok" onPointerDown={e => { if (done.token && !held && !e.target.closest('a, button')) { clearTimeout(resetTimer.current); setHeld(true); } }}>
           <div className="qr-name">{done.action === 'IN' ? '✅ IN' : '🏁 OUT'} {done.time}</div>
           <div className="qr-sub">{done.name}</div>
+          {done.token && <div className="qr-sub">{held ? '⏸ Stopped · press the button to open' : 'Opening your duty page… touch here to stay'}</div>}
           {/* replace, not a new page (Prem, 29 Oct): ← back from the duty page must not land on IN / OUT again; only a new scan opens it. */}
           {done.token && <a className="qr-big qr-in" href={'#guard/' + done.token}
             onClick={e => { e.preventDefault(); clearTimeout(resetTimer.current); goDuty(done.token); }}>📋 Open my duty page<small>Post · take over · chat · break</small></a>}

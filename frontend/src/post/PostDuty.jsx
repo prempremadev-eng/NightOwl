@@ -25,6 +25,7 @@ export default function PostDuty({ token }) {
   // Straight on after the gate (Prem, 23 Nov): "attendance marked" shows for a few seconds, then the next page
   // opens by itself; the guard does not have to tap the button.
   const [autoLeft, setAutoLeft] = useState(fromGate.current ? 4 : 0);
+  const [held, setHeld] = useState(false);
   const load = useCallback(async () => {
     setError('');
     try {
@@ -156,8 +157,10 @@ export default function PostDuty({ token }) {
   // Screen 1: Duty assigned
   if (view === 'main') {
     const next = () => { setAutoLeft(0); if (onDuty) { fromGate.current = false; setView('timeline'); } else setView('waiting'); };
+    // Touch the screen to stay (Prem, 23 Nov): the countdown stops; the button still moves on.
+    const stay = () => { if (autoLeft > 0) { setAutoLeft(0); setHeld(true); } };
     return (
-      <div className="pd pd-page">
+      <div className="pd pd-page" onPointerDown={e => { if (!e.target.closest('button, a')) stay(); }}>
         <div className="pd-top">
           <div className="pd-brand">Duty</div>
           <div className="pd-muted">{duty.branch}</div>
@@ -166,7 +169,9 @@ export default function PostDuty({ token }) {
           {Icon.bell}
           <div>
             <div className="pd-notice-sub">Card IN · {duty.inAt}</div>
-            {autoLeft > 0 && <div className="pd-notice-main">✅ வருகை பதிவு செய்யப்பட்டது · Attendance marked</div>}
+            {(autoLeft > 0 || held) && <div className="pd-notice-main">✅ வருகை பதிவு செய்யப்பட்டது · Attendance marked</div>}
+            {autoLeft > 0 && <div className="pd-notice-sub">Touch the screen to stay here · நிற்க திரையைத் தொடுங்கள்</div>}
+            {held && <div className="pd-notice-sub">⏸ Stopped · press the button below to go on</div>}
             <div className="pd-notice-main">{onDuty ? 'You are on duty' + (duty.takenOverAt ? ' since ' + duty.takenOverAt : '') : 'Your post for today is ready'}</div>
           </div>
         </div>

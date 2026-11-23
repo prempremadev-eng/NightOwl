@@ -9,6 +9,7 @@ import VideoRecorder from './VideoRecorder.jsx';
 import PhotoView, { PhotoPick, ChatPhoto } from './PhotoView.jsx';
 import ChatInput from './ChatInput.jsx';
 import { shareMessage } from './share.js';
+import LinkText from './LinkText.jsx';
 import BreakSheet from './BreakSheet.jsx';
 import SiteReportForm from './SiteReportForm.jsx';
 import ErtForm from './ErtForm.jsx';
@@ -63,7 +64,7 @@ function Bubble({ m, onMenu, onReply, onPhoto }) {
         </div>
       )}
       {m.media && <Media m={m} />}
-      {m.text && <div>{m.text}</div>}
+      {m.text && <div><LinkText text={m.text} /></div>}
       <div className="pd-meta">
         {m.pinned && <>{Icon.pin}{m.kind === 'supervisor' ? 'Pinned by the office' : 'Pinned for next guard'} · </>}
         {m.forwarded && <>Sent to supervisor · </>}

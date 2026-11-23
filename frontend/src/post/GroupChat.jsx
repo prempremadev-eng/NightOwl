@@ -7,6 +7,7 @@ import ChatInput from './ChatInput.jsx';
 import MsgMenu from './MsgMenu.jsx';
 import VoiceNote, { RecordingRow, LockedRecorder, useVoiceRecorder } from './VoiceNote.jsx';
 import { useSwipeReply, jumpTo } from './swipe.jsx';
+import LinkText from './LinkText.jsx';
 
 // The agency group ("IPF Schedule", Prem 26 Oct), the same screen for a guard (by his link) and the office
 // (by login): the whole team and the office talk here, everyone can send and reply.
@@ -27,7 +28,7 @@ function Bubble({ m, onReply, onPhoto, onMenu }) {
       {m.media && m.media.url && m.kind === 'photo' && <ChatPhoto url={m.media.url} alt="Photo" name={m.author} />}
       {m.media && m.media.url && m.kind === 'video' && <video src={m.media.url} controls playsInline preload="metadata" className="pd-media-img" />}
       {m.media && m.media.url && m.kind === 'voice' && <VoiceNote url={m.media.url} duration={m.media.duration} />}
-      {m.text && <div>{m.text}</div>}
+      {m.text && <div><LinkText text={m.text} /></div>}
       <div className="pd-meta">{m.time}</div>
     </div>
   );

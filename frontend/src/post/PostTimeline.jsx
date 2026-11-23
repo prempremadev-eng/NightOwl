@@ -432,7 +432,7 @@ export default function PostTimeline({ token, duty, shiftLine, onDutyChange }) {
           <button className="pd-icon-btn" onClick={load} aria-label="Refresh">{Icon.refresh}</button>
           <MoreMenu label="☰ More" items={[
             // Order (Prem, 11 Nov): Add reliever, Team group, Go on break, then the rest.
-            !general ? ['🔁 Add reliever', () => setSheet('relief')] : null,
+            !general && duty.relief !== false ? ['🔁 Add reliever', () => setSheet('relief')] : null,
             ['👥 Team group', () => { window.location.hash = '#group/' + token; }],
             !here && !onBreak && !myBreak ? ['☕ Go on break', () => setSheet('break')] : null,
             ['🕘 Duty history', () => setPage('history')], ['📅 My attendance', () => { window.location.hash = '#myatt/' + token; }], ['📷 Profile photo', () => setPicking(true)]]} />

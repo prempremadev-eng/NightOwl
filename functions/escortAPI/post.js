@@ -208,7 +208,7 @@ module.exports = function postRoutes(app, h) {
       ]);
       const post = posts.length ? posts[0].Posts : { post_name: 'Post', branch_id: null };
       const branches = post.branch_id
-        ? await zcql.executeZCQLQuery(`SELECT branch_name, area, supervisor_phone FROM Branches WHERE ROWID = ${requireRowId(post.branch_id)}`)
+        ? await zcql.executeZCQLQuery(`SELECT branch_name, area, supervisor_phone, lat, lng FROM Branches WHERE ROWID = ${requireRowId(post.branch_id)}`)
         : [];
       const branch = branches.length ? branches[0].Branches : {};
 
@@ -249,6 +249,9 @@ module.exports = function postRoutes(app, h) {
           handedOverAt: (log.handed_over_at || '').slice(11, 16),
           post: post.post_name, branch: [branch.branch_name, branch.area].filter(Boolean).join(' · '),
           supervisorPhone: branch.supervisor_phone || '',
+          // 🔁 Add reliever only where the gate QR is set (Prem, 23 Nov: Cumbum only). A reliever comes IN
+          // through the gate QR, so a branch without it has no use for the button.
+          relief: branch.lat !== null && branch.lat !== undefined && branch.lat !== '' && branch.lng !== null && branch.lng !== undefined && branch.lng !== '',
           shift: shifts.find(s => s.code === log.shift_code) || { code: log.shift_code, start: '', end: '' },
           from, notes, works, general, atPost, vehicleEntry: isTrue(post.vehicle_entry), reportType: post.report_type || ''
         }

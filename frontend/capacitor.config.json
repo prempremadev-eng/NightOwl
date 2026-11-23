@@ -3,7 +3,7 @@
   "appName": "NightOwl",
   "webDir": "dist",
   "server": {
-    "url": "https://nightowl-pebhkgse.onslate.in/index.html",
+    "url": "https://nightowl-jdztrnkh.onslate.in/index.html",
     "androidScheme": "https",
     "allowNavigation": [
       "*.onslate.in",

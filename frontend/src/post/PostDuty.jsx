@@ -22,6 +22,9 @@ export default function PostDuty({ token }) {
 
   // Came from the gate QR: show the Card IN screen first, the chat after a tap (Prem, 9 Nov).
   const fromGate = useRef((() => { try { const v = sessionStorage.getItem('from-gate'); sessionStorage.removeItem('from-gate'); return !!v; } catch { return false; } })());
+  // Straight on after the gate (Prem, 23 Nov): "attendance marked" shows for a few seconds, then the next page
+  // opens by itself; the guard does not have to tap the button.
+  const [autoLeft, setAutoLeft] = useState(fromGate.current ? 4 : 0);
   const load = useCallback(async () => {
     setError('');
     try {
@@ -73,6 +76,18 @@ export default function PostDuty({ token }) {
 
   const shift = duty && duty.shift;
   const onDuty = !!duty && (duty.status === 'on_duty' || duty.status === 'on_break');
+
+  // Count down on the Card IN screen after the gate, then move on as the button would.
+  useEffect(() => {
+    if (autoLeft > 0 && view !== 'main' && view !== 'loading') { setAutoLeft(0); return undefined; } // once only
+    if (view !== 'main' || autoLeft <= 0) return undefined;
+    const id = setTimeout(() => {
+      if (autoLeft > 1) return setAutoLeft(autoLeft - 1);
+      setAutoLeft(0);
+      if (onDuty) { fromGate.current = false; setView('timeline'); } else setView('waiting');
+    }, 1000);
+    return () => clearTimeout(id);
+  }, [view, autoLeft, onDuty]);
   const shiftLine = shift ? (shift.code === 'G' ? 'General shift' : 'Shift ' + shift.code) + ' · ' + shift.start + ' – ' + shift.end : '';
 
   if (view === 'loading') return <div className="pd pd-page"><div className="pd-muted">Loading...</div></div>;
@@ -140,6 +155,7 @@ export default function PostDuty({ token }) {
 
   // Screen 1: Duty assigned
   if (view === 'main') {
+    const next = () => { setAutoLeft(0); if (onDuty) { fromGate.current = false; setView('timeline'); } else setView('waiting'); };
     return (
       <div className="pd pd-page">
         <div className="pd-top">
@@ -150,6 +166,7 @@ export default function PostDuty({ token }) {
           {Icon.bell}
           <div>
             <div className="pd-notice-sub">Card IN · {duty.inAt}</div>
+            {autoLeft > 0 && <div className="pd-notice-main">✅ வருகை பதிவு செய்யப்பட்டது · Attendance marked</div>}
             <div className="pd-notice-main">{onDuty ? 'You are on duty' + (duty.takenOverAt ? ' since ' + duty.takenOverAt : '') : 'Your post for today is ready'}</div>
           </div>
         </div>
@@ -163,9 +180,9 @@ export default function PostDuty({ token }) {
           </div>
         </div>
         <div className="pd-grow"></div>
-        {onDuty
-          ? <button className="pd-btn pd-btn-primary" onClick={() => { fromGate.current = false; setView('timeline'); }}>💬 Open my post chat</button>
-          : <button className="pd-btn pd-btn-primary" onClick={() => setView('waiting')}>Go to my post</button>}
+        <button className="pd-btn pd-btn-primary" onClick={next}>
+          {onDuty ? '💬 Open my post chat' : 'Go to my post'}{autoLeft > 0 ? ' (' + autoLeft + ')' : ''}
+        </button>
         {callButton}
       </div>
     );

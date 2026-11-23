@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { api, apiUrl } from '../api.js';
+import { isNativeApp } from '../native.js';
 
 // #qr/<key>: the gate QR (Prem, 29 Oct, Cumbum). Any phone, no login: GPS near the gate → front camera
 // 3 · 2 · 1 → Zia finds the registered guard → one big IN / OUT button. Server: functions/escortAPI/qr.js.
@@ -360,6 +361,10 @@ export default function QrAttend({ qrKey }) {
         </div>
       )}
       {step === 'start' && site && site.ready && !firstTime && <button className="qr-link" onClick={() => setHelp(h => !h)}>❓ Help</button>}
+      {/* 📱 v3.3 (Prem, 23 Nov): Android phones in the browser get the app from here; with the app installed this
+          same QR opens in the app. */}
+      {step === 'start' && site && site.ready && !isNativeApp() && /Android/i.test(navigator.userAgent) &&
+        <a className="qr-link" href="app/NightOwl.apk" download>📱 NightOwl app · ஆப் பதிவிறக்கம்</a>}
       {step === 'gps' && <div className="qr-wait">📍 Finding your location…</div>}
       <div className="qr-cam" style={{ display: step === 'camera' ? 'block' : 'none' }}>
         {/* White glow round the picture: the screen lights the face like a selfie flash. */}

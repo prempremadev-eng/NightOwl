@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "in.nightowl.app",
+    "sha256_cert_fingerprints": ["EE:04:06:E2:AC:EA:EB:9B:85:29:71:D0:C1:25:18:C6:F3:61:27:D4:31:3C:46:0A:A8:8E:48:E0:67:1E:72:CD"]
+  }
+}]

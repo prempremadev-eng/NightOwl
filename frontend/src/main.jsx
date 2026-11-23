@@ -34,6 +34,7 @@ import MyAttendance from './components/MyAttendance.jsx';
 import GroupChat from './post/GroupChat.jsx';
 import { api } from './api.js';
 import { isNativeApp } from './native.js';
+import { startAppLinks } from './appLinks.js';
 import { startAppPush } from './pushNative.js';
 import BatteryHelpCard from './components/BatteryHelp.jsx';
 import AppLogin from './components/AppLogin.jsx';
@@ -130,6 +131,7 @@ async function newVersion() {
 }
 // 📱 Android app: also check once at start (the WebView keeps the old index.html after a deploy).
 if (isNativeApp()) setTimeout(async () => { if (await newVersion()) window.location.reload(); }, 1500);
+startAppLinks(); // 📱 v3.3: the gate QR opens in the app
 // 🔔 App notifications (v2): once a guard is logged in on this phone, register it with FCM.
 if (isNativeApp()) {
   const appPush = () => { try { const t = localStorage.getItem('guard_token'); if (t && localStorage.getItem('app_office') !== '1') startAppPush(t); } catch { /* fine */ } };

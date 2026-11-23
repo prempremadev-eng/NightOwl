@@ -27,7 +27,10 @@ export async function startAppPush(t) {
     });
     await PushNotifications.addListener('pushNotificationActionPerformed', a => {
       const url = a && a.notification && a.notification.data && a.notification.data.url;
-      const hash = url && url.includes('#') ? url.slice(url.indexOf('#')) : '';
+      let hash = url && url.includes('#') ? url.slice(url.indexOf('#')) : '';
+      // 23 Nov: the server sends '#guard' / '#group' without the guard's link (no token through Google);
+      // this phone's own logged-in guard is meant.
+      if (hash === '#guard' || hash === '#group') hash += '/' + t;
       if (hash) window.location.hash = hash;
     });
     let perm = await PushNotifications.checkPermissions();

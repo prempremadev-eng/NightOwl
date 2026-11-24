@@ -122,6 +122,11 @@ module.exports = function auth(catalyst, selectAll) {
       if (!user) return res.status(401).json({ status: 'failure', error: 'Please sign in.', login: true });
       const zcql = catalyst.initialize(req, { scope: 'admin' }).zcql();
       const email = String(user.email_id).toLowerCase();
+      // Zoho mail ids only (Prem, 24 Nov): env OFFICE_EMAIL_DOMAINS = "zohocorp.com,…". Empty = no domain check.
+      const domains = String(process.env.OFFICE_EMAIL_DOMAINS || '').toLowerCase().split(',').map(d => d.trim().replace(/^@/, '')).filter(Boolean);
+      if (domains.length && !domains.some(d => email.endsWith('@' + d))) {
+        return res.status(403).json({ status: 'failure', error: 'Only Zoho mail ids can sign in here (' + email + '). Sign out and use your Zoho mail.', noRole: true, badDomain: true });
+      }
       const role = EMAIL_RE.test(email) ? await roleOf(zcql, email) : null;
       req.login = { email, user_id: String(user.user_id || ''), name: [user.first_name, user.last_name].filter(Boolean).join(' ') };
       if (!role || !RANK[role.role]) {

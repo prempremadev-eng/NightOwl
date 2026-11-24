@@ -91,7 +91,8 @@ export default function AuthGate({ children, bar = true }) {
     if (step !== 'login' || widget.current) return;
     widget.current = true;
     loadSdk().then(() => {
-      window.catalyst.auth.signIn('login-box', { service_url: window.location.pathname + window.location.hash });
+      // Zoho sign-in only (Prem, 24 Nov): no email + password box, only "Sign in with Zoho".
+      window.catalyst.auth.signIn('login-box', { signin_providers_only: true, service_url: window.location.pathname + window.location.hash });
     }).catch(err => { setError(err.message); setStep('error'); });
   }, [step]);
 
@@ -101,6 +102,8 @@ export default function AuthGate({ children, bar = true }) {
       <div className="setup">
         <div className="setup-card bad">❌ {error}</div>
         <button className="btn setup-btn" onClick={() => window.location.reload()}>Reload</button>
+        {/* Signed in with a non-Zoho mail (24 Nov): sign out to try the Zoho one. */}
+        <button className="btn secondary setup-btn" onClick={signOut}>Sign out</button>
       </div>
     );
   }

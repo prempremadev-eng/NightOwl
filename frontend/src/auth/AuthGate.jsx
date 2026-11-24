@@ -91,8 +91,9 @@ export default function AuthGate({ children, bar = true }) {
     if (step !== 'login' || widget.current) return;
     widget.current = true;
     loadSdk().then(() => {
-      // Zoho sign-in only (Prem, 24 Nov): no email + password box, only "Sign in with Zoho".
-      window.catalyst.auth.signIn('login-box', { signin_providers_only: true, service_url: window.location.pathname + window.location.hash });
+      // Zoho-only sign-in was tried (24 Nov): on Slate the last step stops at /oauthorize (OAU001 JSON), so
+      // the email + password box stays; the server allows only Zoho mail ids (OFFICE_EMAIL_DOMAINS).
+      window.catalyst.auth.signIn('login-box', { service_url: window.location.pathname + window.location.hash });
     }).catch(err => { setError(err.message); setStep('error'); });
   }, [step]);
 

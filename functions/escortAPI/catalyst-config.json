@@ -5,8 +5,7 @@
 		"type": "advancedio",
 		"env_variables": {
 			"MEDIA_BUCKET": "nightowl-app-media",
-			"APP_URL": "https://nightowl-pebhkgse.onslate.in/",
-			"OFFICE_EMAIL_DOMAINS": "zohocorp.com,zohocorphelpdesk.com"
+			"APP_URL": "https://nightowl-pebhkgse.onslate.in/"
 		}
 	},
 	"execution": {

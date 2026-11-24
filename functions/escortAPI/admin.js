@@ -14,7 +14,7 @@ const isOwner = u => u.created_by === 'setup';
 
 module.exports = function adminRoutes(app, h) {
   const { catalyst, selectAll, requireRowId, requireText, fail, auth, parseShiftTimes, forgetShiftTimes } = h;
-  const { ROLES, RANK, ROLE_NAME, EMAIL_RE, need, branchOk, requireBranch, branchList, forgetBranches, forgetUser } = auth;
+  const { ROLES, RANK, ROLE_NAME, EMAIL_RE, officeMailOk, need, branchOk, requireBranch, branchList, forgetBranches, forgetUser } = auth;
 
   const admin = req => catalyst.initialize(req, { scope: 'admin' });
   const ok = (res, data) => res.status(200).json({ status: 'success', data });
@@ -170,6 +170,7 @@ module.exports = function adminRoutes(app, h) {
       const b = req.body || {};
       const email = String(b.email || '').trim().toLowerCase();
       if (!EMAIL_RE.test(email)) throw new Error('Enter a valid email');
+      if (!officeMailOk(email)) throw new Error('Only Zoho mail ids (' + (process.env.OFFICE_EMAIL_DOMAINS || '') + ') can be added.');
       const row = await userFromBody(req, zcql, b);
       const same = await zcql.executeZCQLQuery(`SELECT ROWID FROM UserRoles WHERE email = '${email}'`);
       if (same.length) throw new Error(email + ' already has a login. Edit that one.');
@@ -202,6 +203,7 @@ module.exports = function adminRoutes(app, h) {
       // A new email (Prem, 25 Oct): the login moves to it and the new address gets the invite mail.
       const email = String(req.body.email || u.email).trim().toLowerCase();
       if (!EMAIL_RE.test(email)) throw new Error('Enter a valid email');
+      if (!officeMailOk(email)) throw new Error('Only Zoho mail ids (' + (process.env.OFFICE_EMAIL_DOMAINS || '') + ') can be added.');
       let mail = null;
       if (email !== u.email) {
         const same = await zcql.executeZCQLQuery(`SELECT ROWID FROM UserRoles WHERE email = '${email}'`);

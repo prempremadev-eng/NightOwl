@@ -117,6 +117,8 @@ export default function AuthGate({ children, bar = true }) {
           {/* A guard who opened the app without his link (Prem, 6 Nov): this phone knows his duty page. */}
           {myDutyLink() && <a className="btn setup-btn" style={{ display: 'block', textAlign: 'center', fontSize: '1.15rem', padding: '14px', margin: '8px 0 14px' }} href={'#guard/' + myDutyLink()}>📋 My duty page · என் பணி பக்கம்</a>}
           <div id="login-box" className="login-box"></div>
+          {/* Zoho mail ids only (Prem, 24 Nov): say so before they try a Gmail. */}
+          <p className="login-sub">🔒 Use your Zoho mail id (@zohocorp.com / @zohocorphelpdesk.com)</p>
           {isNativeApp() && <button type="button" className="btn secondary setup-btn" onClick={() => { try { localStorage.removeItem('app_office'); } catch { /* fine */ } window.location.hash = '#applogin'; }}>📱 Guard login (Clock No + PIN)</button>}
         </div>
       </div>
